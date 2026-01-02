@@ -5,25 +5,30 @@ import { SentimentChart } from "@/components/sentiment-chart";
 import { ArrowLeft, MessageCircle, Share2, ThumbsUp, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
-// Mock Data Utility
+// Mock Data Utility (Korean)
 function getTrendDetail(id: string) {
     // In a real app, fetch data based on ID
+    // For demo purposes, we'll return Korean data based on ID '1' or others
+    const isId1 = id === "1";
+
     return {
         id,
-        keyword: id === "1" ? "Retro Cameras" : "Baggy Jeans", // Simple mock mapping
-        category: id === "1" ? "Tech" : "Fashion",
-        growth: "+145%",
-        volume: "12.5k",
-        description: "Gen Z reviving vintage digital cameras from early 2000s.",
+        keyword: isId1 ? "레트로 디카" : "와이드 청바지",
+        category: isId1 ? "테크" : "패션",
+        growth: isId1 ? "+145%" : "+89%",
+        volume: isId1 ? "1.2만" : "4.5만",
+        description: isId1
+            ? "Z세대가 2000년대 초반 빈티지 디카 감성을 다시 찾고 있어요."
+            : "오버사이즈 데님이 다시 스트릿 패션을 지배하고 있습니다.",
         sentimentData: [
-            { name: 'Positive', value: 65 },
-            { name: 'Neutral', value: 25 },
-            { name: 'Negative', value: 10 },
+            { name: '긍정', value: 65 },
+            { name: '중립', value: 25 },
+            { name: '부정', value: 10 },
         ],
         relatedPosts: [
-            { id: 1, user: "@tech_enthusiast", time: "2h ago", content: "Just found my dad's old Canon IXY. The photos have such a vibe! 📸 #vintage", likes: 1240, comments: 45 },
-            { id: 2, user: "@trends_daily", time: "5h ago", content: "Digital cameras are outselling the latest smartphones for casual photography.", likes: 890, comments: 120 },
-            { id: 3, user: "@genz_life", time: "1d ago", content: "Why do we love low quality pics so much? It feels more real.", likes: 2300, comments: 340 },
+            { id: 1, user: "@tech_enthusiast", time: "2시간 전", content: "아빠 서랍에서 찾은 옛날 디카 감성 대박이네... 📸 #빈티지 #레트로", likes: 1240, comments: 45 },
+            { id: 2, user: "@trends_daily", time: "5시간 전", content: "요즘 누가 스마트폰으로 찍나요? 디카가 대세입니다.", likes: 890, comments: 120 },
+            { id: 3, user: "@genz_life", time: "1일 전", content: "화질구지 감성이 오히려 힙하다고요.", likes: 2300, comments: 340 },
         ]
     };
 }
@@ -40,7 +45,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
                     <Link href="/">
                         <Button variant="ghost" className="gap-2 pl-0 hover:pl-2 transition-all">
                             <ArrowLeft className="h-4 w-4" />
-                            Back to Dashboard
+                            대시보드로 돌아가기
                         </Button>
                     </Link>
                 </div>
@@ -65,7 +70,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
                         </Button>
                         <Button className="gap-2">
                             <TrendingUp className="h-4 w-4" />
-                            Track This Trend
+                            트렌드 추적하기
                         </Button>
                     </div>
                 </div>
@@ -77,21 +82,21 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
                     <div className="lg:col-span-1 space-y-6">
                         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-lg font-medium text-muted-foreground">Growth Velocity</CardTitle>
+                                <CardTitle className="text-lg font-medium text-muted-foreground">성장 속도</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-4xl font-bold text-green-600 mb-1">{data.growth}</div>
-                                <div className="text-sm text-muted-foreground">increase in the last 24h</div>
+                                <div className="text-sm text-muted-foreground">지난 24시간 증가율</div>
                             </CardContent>
                         </Card>
 
                         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-lg font-medium text-muted-foreground">Total Volume</CardTitle>
+                                <CardTitle className="text-lg font-medium text-muted-foreground">총 언급량</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-4xl font-bold text-slate-800 dark:text-slate-100 mb-1">{data.volume}</div>
-                                <div className="text-sm text-muted-foreground">mentions across platforms</div>
+                                <div className="text-sm text-muted-foreground">SNS 관련 게시글 수</div>
                             </CardContent>
                         </Card>
 
@@ -100,7 +105,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
 
                     {/* Right Column: Content Feed */}
                     <div className="lg:col-span-2 space-y-6">
-                        <h2 className="text-2xl font-bold">Top Discussions</h2>
+                        <h2 className="text-2xl font-bold">주요 반응 (Top Discussions)</h2>
                         <div className="space-y-4">
                             {data.relatedPosts.map((post) => (
                                 <Card key={post.id} className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
