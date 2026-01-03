@@ -3,19 +3,10 @@ export interface TrendItem {
     keyword: string;
     velocity_score: number;
     total_posts: number;
-    sentiment: {
-        positive: number;
-        neutral: number;
-        negative: number;
-    };
+    sentiment: "positive" | "neutral" | "negative";
     summary: string;
     related_hashtags: string[];
     created_at: string;
-    description: string;
-    category: string;
-    growth: string;
-    volume: string;
-    trending: boolean;
 }
 
 export interface RawPost {

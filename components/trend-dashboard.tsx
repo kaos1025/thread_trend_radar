@@ -11,54 +11,28 @@ import { TrendItem } from "@/types/trend";
 import { analyzeKeyword } from "@/app/actions/analyze";
 import { TrendChart } from "@/components/trend-chart";
 
-// Initial Mock Data (You can move this to a separate file later if needed)
+// Initial Mock Data (Updated to match new schema)
 const INITIAL_TRENDS: TrendItem[] = [
     {
         id: "1",
         keyword: "레트로 디카",
-        category: "테크",
-        growth: "+145%",
-        volume: "1.2만",
-        description: "Z세대가 2000년대 초반 빈티지 디카 감성을 다시 찾고 있어요.",
-        trending: true,
         velocity_score: 85,
         total_posts: 12000,
-        sentiment: { positive: 65, neutral: 25, negative: 10 },
-        summary: "레트로 열풍 지속",
+        sentiment: "positive",
+        summary: "Z세대가 2000년대 초반 빈티지 디카 감성을 다시 찾고 있어요.",
         related_hashtags: ["#빈티지", "#디카"],
         created_at: new Date().toISOString()
     },
     {
         id: "2",
         keyword: "와이드 청바지",
-        category: "패션",
-        growth: "+89%",
-        volume: "4.5만",
-        description: "오버사이즈 데님이 다시 스트릿 패션을 지배하고 있습니다.",
-        trending: true,
         velocity_score: 72,
         total_posts: 45000,
-        sentiment: { positive: 60, neutral: 30, negative: 10 },
-        summary: "Y2K 패션의 귀환",
+        sentiment: "neutral",
+        summary: "오버사이즈 데님이 다시 스트릿 패션을 지배하고 있습니다.",
         related_hashtags: ["#오버핏", "#데님"],
         created_at: new Date().toISOString()
-    },
-    // ... Add more initial items if needed
-    {
-        id: "3",
-        keyword: "AI 코딩 어시스턴트",
-        category: "테크",
-        growth: "+320%",
-        volume: "8천",
-        description: "개발자들이 생산성을 위해 AI 도구로 대거 이동 중입니다.",
-        trending: true,
-        velocity_score: 95,
-        total_posts: 8000,
-        sentiment: { positive: 88, neutral: 10, negative: 2 },
-        summary: "생산성 혁명",
-        related_hashtags: ["#AI", "#코딩"],
-        created_at: new Date().toISOString()
-    },
+    }
 ];
 
 export function TrendDashboard() {
@@ -77,7 +51,7 @@ export function TrendDashboard() {
             setKeyword(""); // Clear input
         } catch (error) {
             console.error("Failed to analyze:", error);
-            // Optional: Add toast notification for error
+            alert("AI 분석에 실패했습니다.");
         } finally {
             setIsLoading(false);
         }
@@ -89,11 +63,25 @@ export function TrendDashboard() {
         }
     }
 
-    const getSentimentColor = (sentiment: { positive: number, negative: number }) => {
-        if (sentiment.positive >= 60) return "bg-green-100 text-green-700 border-green-200";
-        if (sentiment.negative >= 40) return "bg-red-100 text-red-700 border-red-200";
-        return "bg-slate-100 text-slate-700 border-slate-200"; // Neutral
+    const getSentimentColor = (sentiment: string) => {
+        switch (sentiment) {
+            case "positive": return "bg-green-100 text-green-700 border-green-200";
+            case "negative": return "bg-red-100 text-red-700 border-red-200";
+            default: return "bg-slate-100 text-slate-700 border-slate-200";
+        }
     };
+
+    const getSentimentLabel = (sentiment: string) => {
+        switch (sentiment) {
+            case "positive": return "긍정적";
+            case "negative": return "부정적";
+            default: return "중립적";
+        }
+    };
+
+    const formatNumber = (num: number) => {
+        return num > 10000 ? `${(num / 10000).toFixed(1)}만` : num.toLocaleString();
+    }
 
     return (
         <div className="space-y-6">
@@ -130,33 +118,33 @@ export function TrendDashboard() {
                         <Card className={`h-full hover:shadow-lg transition-all duration-500 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 border hover:border-primary/50 ${index === 0 && isLoading === false ? 'animate-in fade-in slide-in-from-top-4 duration-700' : ''}`}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <span className="text-sm font-medium text-muted-foreground">
-                                    #{typeof item.id === 'number' && item.id < 10 ? `0${item.id}` : (typeof item.id === 'string' && item.id.length < 3 ? `0${item.id}` : 'NEW')}
+                                    New
                                 </span>
                                 <Badge
-                                    variant={item.category === '테크' ? 'default' : item.category === '패션' ? 'secondary' : 'outline'}
-                                    className={item.category === '유머' ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200' : ''}
+                                    variant="outline"
+                                    className=""
                                 >
-                                    {item.category || "기타"}
+                                    General
                                 </Badge>
                             </CardHeader>
                             <CardContent>
                                 <div className="mb-2 flex items-center gap-2">
                                     <div className="text-xl font-bold truncate">{item.keyword}</div>
-                                    {item.trending && <Flame className="h-4 w-4 text-orange-500 animate-pulse" />}
+                                    {item.velocity_score > 70 && <Flame className="h-4 w-4 text-orange-500 animate-pulse" />}
                                 </div>
                                 <CardDescription className="line-clamp-2 h-10">
-                                    {item.description || item.summary}
+                                    {item.summary}
                                 </CardDescription>
 
                                 <div className="mt-4 flex items-center justify-between">
-                                    {/* Sentiment Badge (New Feature) */}
+                                    {/* Sentiment Badge */}
                                     <Badge variant="outline" className={`text-xs ${getSentimentColor(item.sentiment)}`}>
-                                        긍정 {item.sentiment.positive}%
+                                        {getSentimentLabel(item.sentiment)}
                                     </Badge>
 
                                     <div className="flex items-center gap-1 text-slate-500 text-xs">
                                         <Hash className="h-3 w-3" />
-                                        {item.volume || item.total_posts}
+                                        {formatNumber(item.total_posts)}
                                     </div>
                                 </div>
                             </CardContent>
