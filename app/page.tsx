@@ -13,7 +13,7 @@ export default function Home() {
         <MobileNav />
         <div className="flex items-center gap-2 font-bold text-xl mr-8 text-primary ml-2 lg:ml-0">
           <Activity className="h-6 w-6" />
-          <span>ThreadTrends</span>
+          <span>SocialTrend</span>
         </div>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
           <a href="#" className="transition-colors hover:text-primary text-primary">개요</a>
@@ -101,7 +101,7 @@ export default function Home() {
             <div className="text-center md:text-left">
               <h1 className="text-3xl font-bold tracking-tight">실시간 트렌드</h1>
               <p className="text-muted-foreground mt-1">
-                지금 스레드(Threads)에서 가장 핫한 키워드를 발견하세요.
+                지금 소셜 미디어에서 가장 핫한 키워드를 발견하세요.
               </p>
             </div>
             <div className="hidden md:flex gap-2">
