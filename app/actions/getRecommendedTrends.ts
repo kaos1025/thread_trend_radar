@@ -121,9 +121,27 @@ async function getGoogleTrendsData(): Promise<string> {
             console.log(`[GoogleTrends] Merged total items: ${trends.length}`);
         }
 
-        // 3. Fallback Mock Data (If API is blocked/fails)
+        // 3. Fallback: Google News RSS (If Google Trends is blocked/empty)
         if (trends.length === 0) {
-            console.warn("[GoogleTrends] No data found. Returning empty list.");
+            console.warn("[GoogleTrends] No data found. Falling back to Google News RSS...");
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const Parser = require("rss-parser");
+                const parser = new Parser();
+                const feed = await parser.parseURL("https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko");
+
+                if (feed.items.length > 0) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return feed.items.slice(0, 40).map((item: any, index: number) => {
+                        return `${index + 1}. [News] ${item.title} (Date: ${item.pubDate})`;
+                    }).join("\n");
+                }
+            } catch (rssError) {
+                console.error("[GoogleTrends] Fallback RSS failed:", rssError);
+            }
+
+            // Final fallback if both fail
+            console.warn("[GoogleTrends] Both API and RSS failed. Returning empty list.");
             return "";
         }
 
@@ -180,23 +198,26 @@ async function fetchRecommendedTrends(categoryKey: string, limit: number = 6): P
         Target Quantity: Up to ${limit} items
         
         Context:
-        The following is a list of REAL-TIME GOOGLE SEARCH TRENDS in Korea (via google-trends-api), including search volume:
-        [GOOGLE TRENDS DATA START]
+        The following is a list of TRENDS in Korea. It may be Real-time Search Trends (with volume) OR Google News Headlines (marked with [News]).
+        [DATA START]
         ${hasData ? trendsContext : "No trend data available."}
-        [GOOGLE TRENDS DATA END]
+        [DATA END]
 
-        Task: Analyze the provided [GOOGLE TRENDS DATA] and extract keywords relevant to the category '${category}'.
+        Task: Analyze the provided [DATA] and extract keywords relevant to the category '${category}'.
         
         **STRICT RULES (CRITICAL):**
-        1. **SOURCE OF TRUTH**: You must ONLY return trend keywords that are EXPLICITLY listed in the [GOOGLE TRENDS DATA] above.
-        2. **NO HALLUCITATIONS**: Do NOT generate or invent any trends. If a topic is not in the list, exclude it.
+        1. **SOURCE OF TRUTH**: 
+           - If data is [News], extract the MAIN TOPIC/KEYWORD from the headline.
+           - If data is Search Trends, use the provided keyword.
+        2. **NO HALLUCITATIONS**: Do NOT invent trends not supported by the list.
         3. **QUANTITY**: Return up to ${limit} items. 
            - If there are fewer than ${limit} relevant items, return ONLY what exists.
            - If NO items match the category, return an empty list [].
-           - Do NOT fill with fake data.
         
         Metadata Generation:
-        - 'velocity_score': Use the EXACT 'Search Volume' number parsed from the text (e.g., 20K+ -> 20000). DO NOT normalize to 0-100.
+        - 'velocity_score': 
+           - If valid search volume is provided (e.g. "20K+"), use the parsed number.
+           - If extracting from [News], ESTIMATE a score between 10,000 and 200,000 based on the news importance/freshness.
         - 'total_posts': Estimate total posts count based on volume.
         - 'sentiment': Analyze potential user sentiment on Threads/Instagram.
         - 'summary': 3-line explanation in Korean.
