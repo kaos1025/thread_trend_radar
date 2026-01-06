@@ -41,7 +41,7 @@ const schema = {
                 type: SchemaType.OBJECT,
                 properties: {
                     keyword: { type: SchemaType.STRING, description: "Trend keyword" },
-                    velocity_score: { type: SchemaType.NUMBER, description: "Velocity score 0-100 (Calculated from Search Volume)" },
+                    velocity_score: { type: SchemaType.NUMBER, description: "Raw Search Volume (e.g. 20000)" },
                     total_posts: { type: SchemaType.NUMBER, description: "Estimated total posts" },
                     sentiment: { type: SchemaType.STRING, enum: ["positive", "neutral", "negative"], description: "Sentiment" },
                     summary: { type: SchemaType.STRING, description: "Short summary in Korean" },
@@ -123,19 +123,8 @@ async function getGoogleTrendsData(): Promise<string> {
 
         // 3. Fallback Mock Data (If API is blocked/fails)
         if (trends.length === 0) {
-            console.warn("[GoogleTrends] No data found (likely blocked). Using FALLBACK MOCK DATA.");
-            return `
-            1. 손흥민 (Search Volume: 100K+)
-            2. 뉴진스 (Search Volume: 50K+)
-            3. 챗GPT (Search Volume: 40K+)
-            4. 아이폰 16 (Search Volume: 30K+)
-            5. 날씨 (Search Volume: 300K+)
-            6. 로또 당첨번호 (Search Volume: 200K+)
-            7. 환율 (Search Volume: 50K+)
-            8. 넷플릭스 추천 (Search Volume: 20K+)
-            9. 김민재 (Search Volume: 15K+)
-            10. 삼성전자 (Search Volume: 100K+)
-            `;
+            console.warn("[GoogleTrends] No data found. Returning empty list.");
+            return "";
         }
 
         // 4. Format for Gemini
@@ -207,7 +196,7 @@ async function fetchRecommendedTrends(categoryKey: string, limit: number = 6): P
            - Do NOT fill with fake data.
         
         Metadata Generation:
-        - 'velocity_score': Scale based on 'Search Volume' passed in the text (e.g., 20000 -> 50, 100000 -> 90). logic: (volume / 2000) capped at 100.
+        - 'velocity_score': Use the EXACT 'Search Volume' number parsed from the text (e.g., 20K+ -> 20000). DO NOT normalize to 0-100.
         - 'total_posts': Estimate total posts count based on volume.
         - 'sentiment': Analyze potential user sentiment on Threads/Instagram.
         - 'summary': 3-line explanation in Korean.

@@ -85,9 +85,15 @@ export function RisingTable({ trends }: RisingTableProps) {
                                     <TableCell>
                                         <div className="flex flex-col gap-1">
                                             <div className="flex justify-between text-xs text-muted-foreground">
-                                                <span className="flex items-center"><Flame className="w-3 h-3 mr-1 text-orange-500" /> {item.velocity_score}</span>
+                                                <span className="flex items-center">
+                                                    <Flame className="w-3 h-3 mr-1 text-orange-500" />
+                                                    {new Intl.NumberFormat('en-US').format(item.velocity_score)}+
+                                                </span>
                                             </div>
-                                            <Progress value={item.velocity_score} className="h-2" />
+                                            <Progress
+                                                value={(item.velocity_score / Math.max(...trends.map(t => t.velocity_score))) * 100}
+                                                className="h-2"
+                                            />
                                         </div>
                                     </TableCell>
                                 </TableRow>

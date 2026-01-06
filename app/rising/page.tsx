@@ -1,61 +1,74 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { Button } from "@/components/ui/button";
-import { Activity } from "lucide-react";
-import { MobileNav } from "@/components/mobile-nav";
+"use client";
+
+import { useEffect, useState } from "react";
 import { getRecommendedTrends } from "@/app/actions/getRecommendedTrends";
 import { RisingTable } from "@/components/rising-table";
+import { TrendItem } from "@/types/trend";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
-export default async function RisingPage() {
-    const { trends } = await getRecommendedTrends("all", 20);
+export default function RisingPage() {
+    const [trends, setTrends] = useState<TrendItem[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            // Fetch top 20 trends
+            const data = await getRecommendedTrends("all", 20);
+            setTrends(data.trends);
+        } catch (error) {
+            console.error("Failed to fetch rising trends:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     return (
-        <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
-            {/* Header */}
-            <header className="sticky top-0 z-30 flex h-16 items-center border-b bg-white dark:bg-slate-950 px-4 md:px-6 shadow-sm">
-                <MobileNav />
-                <div className="flex items-center gap-2 font-bold text-xl mr-8 text-primary ml-2 lg:ml-0">
-                    <Activity className="h-6 w-6" />
-                    <span>SocialTrend</span>
+        <div className="container mx-auto p-4 md:p-8 max-w-5xl">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">오늘의 급상승</h1>
+                    <p className="text-muted-foreground mt-1">
+                        대한민국에서 지금 가장 뜨거운 이슈 Top 20 (Daily Trends)
+                    </p>
                 </div>
-                <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-                    <a href="/" className="transition-colors hover:text-primary">개요</a>
-                    <a href="/rising" className="transition-colors hover:text-primary text-primary">급상승</a>
-                    <a href="#" className="transition-colors hover:text-primary">분석</a>
-                    <a href="#" className="transition-colors hover:text-primary">리포트</a>
-                </nav>
-                <div className="flex flex-1 justify-center">
-                    {/* Filter buttons can be omitted here or kept static */}
-                </div>
-                <div className="flex items-center gap-4">
-                    <Button size="icon" variant="ghost">
-                        <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800" />
-                    </Button>
-                </div>
-            </header>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchData}
+                    disabled={loading}
+                    className="gap-2"
+                >
+                    <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                    새로고침
+                </Button>
+            </div>
 
-            <div className="flex flex-1 overflow-hidden">
-                {/* Sidebar (Desktop) - Client Component */}
-                <AppSidebar />
-
-                {/* Main Content */}
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50 dark:bg-slate-950/50">
-                    <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 md:gap-0">
-                        <div className="text-center md:text-left">
-                            <h1 className="text-3xl font-bold tracking-tight">급상승 트렌드 (Top 20)</h1>
-                            <p className="text-muted-foreground mt-1">
-                                현재 가장 빠르게 성장하는 트렌드 키워드를 한눈에 확인하세요.
-                            </p>
-                        </div>
-                        <div className="hidden md:flex gap-2">
-                            <Button>
-                                리포트 다운로드
-                            </Button>
+            {loading ? (
+                <div className="space-y-4">
+                    <div className="rounded-md border p-4">
+                        <div className="space-y-4">
+                            {[...Array(10)].map((_, i) => (
+                                <div key={i} className="flex items-center gap-4">
+                                    <Skeleton className="h-4 w-8" />
+                                    <Skeleton className="h-4 w-[200px]" />
+                                    <Skeleton className="h-4 flex-1" />
+                                    <Skeleton className="h-4 w-12" />
+                                    <Skeleton className="h-4 w-24" />
+                                </div>
+                            ))}
                         </div>
                     </div>
-
-                    <RisingTable trends={trends} />
-                </main>
-            </div>
+                </div>
+            ) : (
+                <RisingTable trends={trends} />
+            )}
         </div>
     );
 }
