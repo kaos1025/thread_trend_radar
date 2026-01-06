@@ -46,6 +46,7 @@ export async function analyzeKeyword(keyword: string): Promise<TrendItem> {
             model: "gemini-2.5-flash",
             generationConfig: {
                 responseMimeType: "application/json",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 responseSchema: schema as any,
             },
         });
@@ -77,8 +78,8 @@ export async function analyzeKeyword(keyword: string): Promise<TrendItem> {
             related_hashtags: data.related_hashtags,
             created_at: new Date().toISOString(),
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("AI Analysis Failed:", error);
-        throw new Error(`AI 분석 실패: ${error.message || "Unknown error"}`);
+        throw new Error(`AI 분석 실패: ${(error as Error).message || "Unknown error"}`);
     }
 }

@@ -36,6 +36,7 @@ export async function getTrendDetail(keyword: string): Promise<TrendDetail> {
             model: "gemini-2.5-flash",
             generationConfig: {
                 responseMimeType: "application/json",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 responseSchema: schema as any,
             },
         });
@@ -62,8 +63,8 @@ export async function getTrendDetail(keyword: string): Promise<TrendDetail> {
             voc_comments: data.voc_comments,
             generated_at: new Date().toISOString(),
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Detail Analysis Failed:", error);
-        throw new Error(`상세 분석 실패: ${error.message || "Unknown error"}`);
+        throw new Error(`상세 분석 실패: ${(error as Error).message || "Unknown error"}`);
     }
 }

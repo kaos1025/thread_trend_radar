@@ -89,7 +89,7 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
                         </CardHeader>
                         <CardContent className="flex items-center h-[calc(100%-4rem)]">
                             <p className="text-lg font-medium text-slate-800 dark:text-slate-200 text-center w-full leading-relaxed">
-                                "{detailData.target_audience}"
+                                &quot;{detailData.target_audience}&quot;
                             </p>
                         </CardContent>
                     </Card>
@@ -111,7 +111,7 @@ export default async function TrendDetailPage({ params, searchParams }: PageProp
                             <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative">
                                 <div className="absolute top-6 left-[-8px] w-4 h-4 bg-white dark:bg-slate-900 border-l border-b border-slate-200 dark:border-slate-800 transform rotate-45 hidden md:block"></div>
                                 <p className="text-slate-700 dark:text-slate-300 italic">
-                                    "{comment}"
+                                    &quot;{comment}&quot;
                                 </p>
                             </div>
                         ))}

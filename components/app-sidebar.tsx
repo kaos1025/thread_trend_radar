@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Flame, LayoutGrid, Monitor, Shirt, Laugh, TrendingUp } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 
 export function AppSidebar() {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const pathname = usePathname()
     const { toast } = useToast()
 
     const currentCategory = searchParams.get("category") || "all"
@@ -47,7 +48,7 @@ export function AppSidebar() {
                                 대시보드
                             </Button>
                             <Button
-                                variant={window.location.pathname === "/rising" ? "secondary" : "ghost"}
+                                variant={pathname === "/rising" ? "secondary" : "ghost"}
                                 className="w-full justify-start"
                                 onClick={() => router.push("/rising")}
                             >

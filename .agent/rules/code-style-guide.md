@@ -28,5 +28,4 @@ trigger: always_on
 
 ## 5. 기타
 - 설명과 .md 파일등은 가급적 한국어로 작성. 
-- 지시한 작업이 끝나면 git repo에 push 한다.
-- 작업 완료 전에 테스트 해보고 완료한다.
+- 지시한 작업이 끝나면 필수적으로 Chrome Instance를 띄워서 테스트를 완료 후 git에 push.

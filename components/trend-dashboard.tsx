@@ -21,7 +21,7 @@ export function TrendDashboard() {
     const [keyword, setKeyword] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [graphData, setGraphData] = useState<any[]>([]);
+    const [graphData, setGraphData] = useState<{ time: string; volume: number }[]>([]);
     const { toast } = useToast();
 
     // URL Sync
@@ -84,11 +84,11 @@ export function TrendDashboard() {
                 title: "분석 완료",
                 description: `'${result.keyword}' 키워드 분석이 완료되었습니다.`,
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
             toast({
                 title: "분석 실패",
-                description: error.message || "AI 분석 중 오류가 발생했습니다.",
+                description: (error as Error).message || "AI 분석 중 오류가 발생했습니다.",
                 variant: "destructive",
             });
         } finally {
