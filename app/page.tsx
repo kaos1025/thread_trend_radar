@@ -1,9 +1,8 @@
+import { AppSidebar } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Activity, Flame, Laugh, LayoutGrid, Monitor, Shirt, TrendingUp } from "lucide-react";
+import { Activity } from "lucide-react";
 import { MobileNav } from "@/components/mobile-nav";
 import { TrendDashboard } from "@/components/trend-dashboard";
-import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   return (
@@ -21,7 +20,12 @@ export default function Home() {
           <a href="#" className="transition-colors hover:text-primary">리포트</a>
         </nav>
         <div className="flex flex-1 justify-center">
-          <div className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-full">
+          {/* Deprecated Header Filters - Removed or kept as visual only? User didn't specify, but Sidebar handles nav now. 
+               Let's keep the layout but maybe remove the buttons if they are redundant with sidebar. 
+               Actually the user request focused on Sidebar. I will keep header mainly as is or empty div for layout balance.*/}
+          <div className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-full opacity-50 pointer-events-none">
+            {/* Visual placeholder or we can wire them up too. For now let's leave them as they seem to be 'quick filters' that might be confusing if not synced. 
+                 Let's comment them out or leave as static. I'll leave them static to preserve layout integrity for now.*/}
             <Button variant="secondary" size="sm" className="rounded-full px-4 h-8 shadow-sm bg-white dark:bg-slate-800 text-primary">전체</Button>
             <Button variant="ghost" size="sm" className="rounded-full px-4 h-8">패션</Button>
             <Button variant="ghost" size="sm" className="rounded-full px-4 h-8">테크</Button>
@@ -36,64 +40,8 @@ export default function Home() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar (Desktop) */}
-        <aside className="w-64 border-r bg-white dark:bg-slate-950 hidden lg:block">
-          <ScrollArea className="h-full">
-            <div className="p-4 space-y-4">
-              <div className="px-3 py-2">
-                <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-slate-500 dark:text-slate-400">
-                  탐색 (Discover)
-                </h2>
-                <div className="space-y-1">
-                  <Button variant="secondary" className="w-full justify-start">
-                    <LayoutGrid className="mr-2 h-4 w-4" />
-                    대시보드
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    급상승 트렌드
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Flame className="mr-2 h-4 w-4" />
-                    핫 토픽
-                  </Button>
-                </div>
-              </div>
-              <div className="px-3 py-2">
-                <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-slate-500 dark:text-slate-400">
-                  카테고리 (Categories)
-                </h2>
-                <div className="space-y-1">
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Shirt className="mr-2 h-4 w-4" />
-                    패션 (Fashion)
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Monitor className="mr-2 h-4 w-4" />
-                    테크 (Tech)
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Laugh className="mr-2 h-4 w-4" />
-                    유머 (Humor)
-                  </Button>
-                </div>
-              </div>
-              <div className="px-3 py-2">
-                <h2 className="mb-2 px-4 text-xs font-semibold tracking-tight text-slate-500 dark:text-slate-400">
-                  필터 (Filters)
-                </h2>
-                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 space-y-2">
-                  <div className="text-sm font-medium">기간 설정</div>
-                  <div className="flex gap-2 text-xs text-muted-foreground">
-                    <Badge variant="outline" className="cursor-pointer bg-white">24시간</Badge>
-                    <Badge variant="outline" className="cursor-pointer">7일</Badge>
-                    <Badge variant="outline" className="cursor-pointer">30일</Badge>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ScrollArea>
-        </aside>
+        {/* Sidebar (Desktop) - Client Component */}
+        <AppSidebar />
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50/50 dark:bg-slate-950/50">

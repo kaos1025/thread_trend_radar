@@ -11,6 +11,7 @@ import { TrendItem } from "@/types/trend";
 import { analyzeKeyword } from "@/app/actions/analyze";
 import { getRecommendedTrends } from "@/app/actions/getRecommendedTrends";
 import { TrendChart } from "@/components/trend-chart";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -20,9 +21,13 @@ export function TrendDashboard() {
     const [keyword, setKeyword] = useState("");
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [category, setCategory] = useState("all");
     const [graphData, setGraphData] = useState<any[]>([]);
     const { toast } = useToast();
+
+    // URL Sync
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const category = searchParams.get("category") || "all";
 
     // Initial Data Fetching (AI Recommendations)
     useEffect(() => {
@@ -31,7 +36,7 @@ export function TrendDashboard() {
         async function fetchTrends() {
             try {
                 setIsLoading(true);
-                // Call Server Action
+                // Call Server Action with English Key (all, fashion, tech, humor)
                 const data = await getRecommendedTrends(category);
 
                 if (isMounted) {
@@ -58,6 +63,14 @@ export function TrendDashboard() {
 
         return () => { isMounted = false; };
     }, [category, toast]);
+
+    const handleTabChange = (value: string) => {
+        if (value === "all") {
+            router.push("/");
+        } else {
+            router.push(`/?category=${value}`);
+        }
+    };
 
     const handleAnalyze = async () => {
         if (!keyword.trim()) return;
@@ -141,13 +154,13 @@ export function TrendDashboard() {
             </div>
 
             {/* Category Tabs */}
-            <Tabs defaultValue="all" className="w-full" onValueChange={setCategory}>
+            <Tabs value={category} className="w-full" onValueChange={handleTabChange}>
                 <div className="flex justify-center mb-8">
                     <TabsList className="grid w-full max-w-[400px] grid-cols-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-full h-12">
                         <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">전체</TabsTrigger>
-                        <TabsTrigger value="패션" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">패션</TabsTrigger>
-                        <TabsTrigger value="테크" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">테크</TabsTrigger>
-                        <TabsTrigger value="유머" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">유머</TabsTrigger>
+                        <TabsTrigger value="fashion" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">패션</TabsTrigger>
+                        <TabsTrigger value="tech" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">테크</TabsTrigger>
+                        <TabsTrigger value="humor" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">유머</TabsTrigger>
                     </TabsList>
                 </div>
 
