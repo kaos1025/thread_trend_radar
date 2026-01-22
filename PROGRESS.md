@@ -7,7 +7,53 @@
 
 ## 📅 진행 기록
 
-### 2025-01-22 (최신) - 바이럴 쇼츠 탐지 기능 완성
+### 2026-01-22 (최신) - UI 개선 & 코드 리뷰 & E2E 테스트 완료
+
+#### ✅ 완료한 작업
+**Phase A: UI 개선 (T031~T035)**
+- T031: 탭 UI 아이콘/스타일 개선 (트렌드/YouTube/바이럴 탭 아이콘 추가)
+- T032: 반응형 레이아웃 검증 (모바일 375px, 데스크톱 지원)
+- T033: 다크모드 토글 추가 (next-themes 연동)
+- T034: 로딩 상태 UI 개선 (Skeleton 컴포넌트)
+- T035: 에러 상태 UI 추가 (재시도 버튼 포함)
+
+**Phase B: 코드 리뷰**
+- 컴포넌트 코드 품질 검토 완료
+- 개선 포인트 식별: maxScore 계산 최적화, 에러 핸들링 강화, formatNumber 중복 제거
+
+**Phase C: E2E 테스트 (Playwright)**
+- TC01: 메인 대시보드 정상 렌더링 ✅
+- TC02: 탭 전환 (트렌드→YouTube→바이럴) ✅
+- TC04: 다크모드 토글 동작 ✅
+- TC05: 반응형 레이아웃 (모바일 뷰) ✅
+
+#### 📁 변경된 파일
+```
+components/theme-provider.tsx - ThemeProvider 래퍼 (신규)
+components/theme-toggle.tsx   - 다크모드 토글 버튼 (신규)
+components/youtube-trends.tsx - 에러 상태 UI 추가
+components/viral-shorts.tsx   - 에러 상태 UI 추가
+app/layout.tsx               - ThemeProvider 적용
+app/page.tsx                 - ThemeToggle 추가
+```
+
+#### 📸 E2E 테스트 스크린샷
+```
+.playwright-mcp/e2e-test-TC01-dashboard.png
+.playwright-mcp/e2e-test-TC02-youtube-tab.png
+.playwright-mcp/e2e-test-TC02-viral-tab.png
+.playwright-mcp/e2e-test-TC04-dark-mode.png
+.playwright-mcp/e2e-test-TC05-mobile-view.png
+```
+
+#### 🔄 다음 작업
+- T040: API 캐싱 구현
+- T043: Vercel 배포
+- 코드 리뷰 개선 사항 적용 (선택)
+
+---
+
+### 2025-01-22 - 바이럴 쇼츠 탐지 기능 완성
 
 #### ✅ 완료한 작업
 - T021: 채널 구독자 수 조회 로직 (channels.list API, 50개 일괄 조회)
@@ -105,7 +151,7 @@ components/trend-dashboard.tsx - 바이럴 탭 추가
 | M2: Google Trends 연동 | ✅ 완료 | |
 | M3: YouTube API 연동 | ✅ 완료 | 기본 연동 |
 | M4: 바이럴 쇼츠 탐지 | ✅ 완료 | T021~T026 완료 |
-| M5: UI/UX 개선 | ⬜ 대기 | |
+| M5: UI/UX 개선 | ✅ 완료 | T031~T035, 코드리뷰, E2E 테스트 |
 | M6: MVP 배포 | ⬜ 대기 | Vercel |
 | M7: 스레드/인스타 연동 | ⬜ 대기 | Phase 2 |
 | **M8: 서비스 완료** | ⬜ 대기 | 개발 종료 |
@@ -115,10 +161,10 @@ components/trend-dashboard.tsx - 바이럴 탭 추가
 ## 📊 완료율
 
 ```
-Phase 1 진행률: ████████░░░░░░░░ 60% (15/25)
+Phase 1 진행률: ████████████░░░░ 80% (20/25)
 Phase 2 진행률: ░░░░░░░░░░░░░░░░ 0% (0/6)
 
-전체 진행률: ████████░░░░░░░░ 48% (15/31)
+전체 진행률: ██████████░░░░░░ 65% (20/31)
 ```
 
 ---
@@ -143,12 +189,21 @@ Phase 2 진행률: ░░░░░░░░░░░░░░░░ 0% (0/6)
 └── ✅ T026: Shorts 필터링 (videoDuration=short)
 ```
 
-### 다음 목표: 대시보드 UI 개선 & 배포
+### ✅ 대시보드 UI 개선 - 완료!
+```
+작업 완료:
+├── ✅ T031: 탭 UI (트렌드/YouTube/바이럴 아이콘)
+├── ✅ T032: 반응형 레이아웃
+├── ✅ T033: 다크모드 (next-themes)
+├── ✅ T034: 로딩 상태 UI
+├── ✅ T035: 에러 상태 UI
+├── ✅ Phase B: 코드 리뷰
+└── ✅ Phase C: E2E 테스트 (Playwright)
+```
+
+### 다음 목표: MVP 배포
 ```
 작업 목록:
-├── T031: 탭 UI (트렌드/바이럴)
-├── T032: 반응형 레이아웃
-├── T033: 다크모드
 ├── T040: API 캐싱 구현
 └── T043: Vercel 배포
 ```

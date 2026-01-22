@@ -16,6 +16,7 @@ import {
     RefreshCw,
     Flame,
     Clock,
+    AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -56,12 +57,14 @@ export function ViralShorts() {
     const [videos, setVideos] = useState<ViralVideo[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState({ totalSearched: 0, viralCount: 0, analyzedAt: "" });
     const { toast } = useToast();
 
     // 바이럴 쇼츠 로드
     const loadViralShorts = async (showRefreshToast = false) => {
         try {
+            setError(null);
             if (showRefreshToast) {
                 setIsRefreshing(true);
             } else {
@@ -82,13 +85,17 @@ export function ViralShorts() {
                     description: "최근 분석 결과를 표시합니다. (30분 캐시)",
                 });
             }
-        } catch (error) {
-            console.error("Failed to load viral shorts:", error);
-            toast({
-                title: "로딩 실패",
-                description: (error as Error).message || "바이럴 쇼츠를 불러오는데 실패했습니다.",
-                variant: "destructive",
-            });
+        } catch (err) {
+            const errorMessage = (err as Error).message || "바이럴 쇼츠를 불러오는데 실패했습니다.";
+            console.error("Failed to load viral shorts:", err);
+            setError(errorMessage);
+            if (showRefreshToast) {
+                toast({
+                    title: "로딩 실패",
+                    description: errorMessage,
+                    variant: "destructive",
+                });
+            }
         } finally {
             setIsLoading(false);
             setIsRefreshing(false);
@@ -136,6 +143,29 @@ export function ViralShorts() {
                     {Array.from({ length: 6 }).map((_, i) => (
                         <Skeleton key={i} className="h-72 rounded-lg" />
                     ))}
+                </div>
+            </div>
+        );
+    }
+
+    // T035: 에러 상태 UI
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
+                        <AlertCircle className="h-10 w-10 text-red-500" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                        데이터를 불러올 수 없습니다
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-md">
+                        {error}
+                    </p>
+                    <Button onClick={() => loadViralShorts()} variant="default">
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        다시 시도
+                    </Button>
                 </div>
             </div>
         );

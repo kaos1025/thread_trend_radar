@@ -19,6 +19,8 @@ import {
     Clock,
     TrendingUp,
     ExternalLink,
+    AlertCircle,
+    RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -54,31 +56,30 @@ export function YouTubeTrends({ initialKeyword = "" }: YouTubeTrendsProps) {
     const [searchKeyword, setSearchKeyword] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
 
     // 초기 인기 영상 로드
-    useEffect(() => {
-        async function loadTrending() {
-            try {
-                setIsLoading(true);
-                const trendingVideos = await getYouTubeTrendingVideos("0", 10);
-                setVideos(trendingVideos);
-            } catch (error) {
-                console.error("Failed to load trending videos:", error);
-                toast({
-                    title: "로딩 실패",
-                    description: "인기 영상을 불러오는데 실패했습니다.",
-                    variant: "destructive",
-                });
-            } finally {
-                setIsLoading(false);
-            }
+    const loadTrending = async () => {
+        try {
+            setError(null);
+            setIsLoading(true);
+            const trendingVideos = await getYouTubeTrendingVideos("0", 10);
+            setVideos(trendingVideos);
+        } catch (err) {
+            const errorMessage = (err as Error).message || "인기 영상을 불러오는데 실패했습니다.";
+            console.error("Failed to load trending videos:", err);
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
+    };
 
+    useEffect(() => {
         if (!initialKeyword) {
             loadTrending();
         }
-    }, [initialKeyword, toast]);
+    }, [initialKeyword]);
 
     // 키워드 검색
     const handleSearch = async () => {
@@ -160,6 +161,29 @@ export function YouTubeTrends({ initialKeyword = "" }: YouTubeTrendsProps) {
                     {Array.from({ length: 6 }).map((_, i) => (
                         <Skeleton key={i} className="h-40 rounded-lg" />
                     ))}
+                </div>
+            </div>
+        );
+    }
+
+    // T035: 에러 상태 UI
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
+                        <AlertCircle className="h-10 w-10 text-red-500" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                        데이터를 불러올 수 없습니다
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-md">
+                        {error}
+                    </p>
+                    <Button onClick={() => loadTrending()} variant="default">
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        다시 시도
+                    </Button>
                 </div>
             </div>
         );

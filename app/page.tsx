@@ -5,6 +5,7 @@ import { Activity } from "lucide-react";
 import { MobileNav } from "@/components/mobile-nav";
 import { TrendDashboard } from "@/components/trend-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 function SidebarFallback() {
   return (
@@ -62,7 +63,8 @@ export default function Home() {
             <Button variant="ghost" size="sm" className="rounded-full px-4 h-8">유머</Button>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button size="icon" variant="ghost">
             <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800" />
           </Button>
