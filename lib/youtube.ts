@@ -2,7 +2,17 @@
 // 급상승 영상 탐지 및 떡상 점수 계산
 
 import { google } from "googleapis";
-import { YouTubeVideo, YouTubeTrendResult, TrendLevel, TREND_LEVEL_THRESHOLDS } from "@/types/youtube";
+import {
+    YouTubeVideo,
+    YouTubeTrendResult,
+    TrendLevel,
+    TREND_LEVEL_THRESHOLDS,
+    ViralVideo,
+    ViralShortsResult,
+    ViralLevel,
+    VIRAL_CRITERIA,
+    VIRAL_LEVEL_THRESHOLDS,
+} from "@/types/youtube";
 import { getCached, setCache } from "./cache";
 
 // YouTube API 클라이언트 초기화
@@ -255,4 +265,240 @@ export async function getTrendingVideos(categoryId = "0", maxResults = 10): Prom
     setCache(cacheKey, videos, 15);
 
     return videos;
+}
+
+// ===== 바이럴 쇼츠 탐지 기능 (T021~T026) =====
+
+/**
+ * T021: 채널 구독자 수 일괄 조회
+ * channels.list API 사용 (최대 50개 채널)
+ */
+async function getChannelSubscribers(channelIds: string[]): Promise<Map<string, number>> {
+    const subscriberMap = new Map<string, number>();
+
+    if (channelIds.length === 0) return subscriberMap;
+
+    // 중복 제거
+    const uniqueIds = [...new Set(channelIds)];
+
+    // 50개씩 나눠서 조회 (API 제한)
+    for (let i = 0; i < uniqueIds.length; i += 50) {
+        const batch = uniqueIds.slice(i, i + 50);
+
+        const response = await youtube.channels.list({
+            part: ["statistics"],
+            id: batch,
+        });
+
+        for (const item of response.data.items || []) {
+            if (item.id && item.statistics?.subscriberCount) {
+                subscriberMap.set(
+                    item.id,
+                    parseInt(item.statistics.subscriberCount, 10)
+                );
+            }
+        }
+    }
+
+    return subscriberMap;
+}
+
+/**
+ * T022: 바이럴 비율 계산
+ */
+function calculateViralRatio(viewCount: number, subscriberCount: number): number {
+    if (subscriberCount <= 0) return 0;
+    return Math.round((viewCount / subscriberCount) * 10) / 10;
+}
+
+/**
+ * T023: 바이럴 판정
+ */
+export function isViralVideo(video: { subscriberCount: number; viewCount: number; viralRatio: number }): boolean {
+    return (
+        video.subscriberCount <= VIRAL_CRITERIA.maxSubscribers &&
+        video.viewCount >= VIRAL_CRITERIA.minViews &&
+        video.viralRatio >= VIRAL_CRITERIA.minViralRatio
+    );
+}
+
+/**
+ * T025: 바이럴 레벨 판정
+ */
+export function getViralLevel(viralRatio: number): ViralLevel | null {
+    if (viralRatio >= VIRAL_LEVEL_THRESHOLDS.mega) return "mega";
+    if (viralRatio >= VIRAL_LEVEL_THRESHOLDS.super) return "super";
+    if (viralRatio >= VIRAL_LEVEL_THRESHOLDS.viral) return "viral";
+    return null;
+}
+
+/**
+ * T025: 바이럴 레벨별 표시 정보
+ */
+export function getViralLevelInfo(level: ViralLevel | null): { emoji: string; label: string; color: string } {
+    switch (level) {
+        case "mega":
+            return { emoji: "🔥🔥🔥", label: "메가 바이럴", color: "text-red-600" };
+        case "super":
+            return { emoji: "🔥🔥", label: "슈퍼 바이럴", color: "text-orange-500" };
+        case "viral":
+            return { emoji: "🔥", label: "바이럴", color: "text-yellow-500" };
+        default:
+            return { emoji: "", label: "", color: "" };
+    }
+}
+
+/**
+ * T026: Shorts 영상 검색
+ * videoDuration=short 파라미터 사용
+ */
+async function searchShortsVideos(maxResults = 50): Promise<{ videoId: string; channelId: string }[]> {
+    // 최근 7일 내 업로드된 영상
+    const publishedAfter = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const response = await youtube.search.list({
+        part: ["id", "snippet"],
+        type: ["video"],
+        videoDuration: "short",  // Shorts 필터
+        order: "viewCount",
+        publishedAfter,
+        maxResults,
+        regionCode: "KR",
+        relevanceLanguage: "ko",
+    });
+
+    return (response.data.items || [])
+        .filter((item) => item.id?.videoId && item.snippet?.channelId)
+        .map((item) => ({
+            videoId: item.id!.videoId!,
+            channelId: item.snippet!.channelId!,
+        }));
+}
+
+/**
+ * Shorts 영상 상세 정보 조회
+ */
+async function getShortsVideoDetails(videoIds: string[]): Promise<Map<string, {
+    title: string;
+    channelId: string;
+    channelTitle: string;
+    publishedAt: string;
+    thumbnailUrl: string;
+    viewCount: number;
+    likeCount: number;
+    commentCount: number;
+}>> {
+    const detailsMap = new Map();
+
+    if (videoIds.length === 0) return detailsMap;
+
+    const response = await youtube.videos.list({
+        part: ["snippet", "statistics"],
+        id: videoIds,
+    });
+
+    for (const item of response.data.items || []) {
+        if (!item.id || !item.snippet || !item.statistics) continue;
+
+        detailsMap.set(item.id, {
+            title: item.snippet.title || "",
+            channelId: item.snippet.channelId || "",
+            channelTitle: item.snippet.channelTitle || "",
+            publishedAt: item.snippet.publishedAt || new Date().toISOString(),
+            thumbnailUrl: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url || "",
+            viewCount: parseInt(item.statistics.viewCount || "0", 10),
+            likeCount: parseInt(item.statistics.likeCount || "0", 10),
+            commentCount: parseInt(item.statistics.commentCount || "0", 10),
+        });
+    }
+
+    return detailsMap;
+}
+
+/**
+ * 바이럴 쇼츠 탐지 (메인 함수)
+ * T021~T026 통합
+ */
+export async function detectViralShorts(): Promise<ViralShortsResult> {
+    const cacheKey = "youtube:viral-shorts";
+
+    // 캐시 확인 (30분 TTL)
+    const cached = getCached<ViralShortsResult>(cacheKey);
+    if (cached) {
+        return { ...cached, cached: true };
+    }
+
+    // 1. Shorts 영상 검색 (T026)
+    const shortsVideos = await searchShortsVideos(50);
+
+    if (shortsVideos.length === 0) {
+        return {
+            videos: [],
+            analyzedAt: new Date().toISOString(),
+            cached: false,
+            totalSearched: 0,
+            viralCount: 0,
+        };
+    }
+
+    // 2. 영상 상세 정보 조회
+    const videoIds = shortsVideos.map((v) => v.videoId);
+    const videoDetails = await getShortsVideoDetails(videoIds);
+
+    // 3. 채널 구독자 수 조회 (T021)
+    const channelIds = shortsVideos.map((v) => v.channelId);
+    const subscriberMap = await getChannelSubscribers(channelIds);
+
+    // 4. 바이럴 비디오 데이터 조합
+    const now = Date.now();
+    const viralVideos: ViralVideo[] = [];
+
+    for (const { videoId, channelId } of shortsVideos) {
+        const details = videoDetails.get(videoId);
+        const subscriberCount = subscriberMap.get(channelId) || 0;
+
+        if (!details) continue;
+
+        const hoursAgo = (now - new Date(details.publishedAt).getTime()) / (1000 * 60 * 60);
+
+        // T022: 바이럴 비율 계산
+        const viralRatio = calculateViralRatio(details.viewCount, subscriberCount);
+
+        const video: ViralVideo = {
+            id: videoId,
+            title: details.title,
+            channelId,
+            channelTitle: details.channelTitle,
+            subscriberCount,
+            viewCount: details.viewCount,
+            likeCount: details.likeCount,
+            commentCount: details.commentCount,
+            viralRatio,
+            publishedAt: details.publishedAt,
+            thumbnailUrl: details.thumbnailUrl,
+            hoursAgo: Math.round(hoursAgo * 10) / 10,
+            isShorts: true,
+        };
+
+        // T023: 바이럴 판정 기준 적용
+        if (isViralVideo(video)) {
+            viralVideos.push(video);
+        }
+    }
+
+    // 바이럴 비율 순으로 정렬
+    viralVideos.sort((a, b) => b.viralRatio - a.viralRatio);
+
+    const result: ViralShortsResult = {
+        videos: viralVideos,
+        analyzedAt: new Date().toISOString(),
+        cached: false,
+        totalSearched: shortsVideos.length,
+        viralCount: viralVideos.length,
+    };
+
+    // 캐시 저장 (30분)
+    setCache(cacheKey, result, 30);
+
+    return result;
 }

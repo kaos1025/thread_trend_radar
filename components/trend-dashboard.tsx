@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Flame, Loader2, Search, TrendingUp, Youtube } from "lucide-react";
+import { Flame, Loader2, Search, TrendingUp, Youtube, Zap } from "lucide-react";
 import Link from "next/link";
 import { TrendItem } from "@/types/trend";
 import { analyzeKeyword } from "@/app/actions/analyze";
 import { getRecommendedTrends } from "@/app/actions/getRecommendedTrends";
 import { TrendChart } from "@/components/trend-chart";
 import { YouTubeTrends } from "@/components/youtube-trends";
+import { ViralShorts } from "@/components/viral-shorts";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -164,10 +165,10 @@ export function TrendDashboard() {
                 </div>
             </div>
 
-            {/* Source Tabs (Trends / YouTube) */}
+            {/* Source Tabs (Trends / YouTube / Viral Shorts) */}
             <Tabs value={source} className="w-full" onValueChange={handleSourceChange}>
                 <div className="flex justify-center mb-6">
-                    <TabsList className="grid w-full max-w-[300px] grid-cols-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-full h-10">
+                    <TabsList className="grid w-full max-w-[450px] grid-cols-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-full h-10">
                         <TabsTrigger value="trends" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
                             <TrendingUp className="h-4 w-4" />
                             트렌드
@@ -175,6 +176,10 @@ export function TrendDashboard() {
                         <TabsTrigger value="youtube" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
                             <Youtube className="h-4 w-4 text-red-500" />
                             YouTube
+                        </TabsTrigger>
+                        <TabsTrigger value="viral" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
+                            <Zap className="h-4 w-4 text-orange-500" />
+                            바이럴
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -269,6 +274,11 @@ export function TrendDashboard() {
                 {/* YouTube 콘텐츠 */}
                 <TabsContent value="youtube" className="mt-0">
                     <YouTubeTrends />
+                </TabsContent>
+
+                {/* 바이럴 쇼츠 콘텐츠 */}
+                <TabsContent value="viral" className="mt-0">
+                    <ViralShorts />
                 </TabsContent>
             </Tabs>
 

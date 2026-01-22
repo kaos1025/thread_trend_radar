@@ -1,7 +1,7 @@
 "use server";
 
-import { detectRisingVideos, getTrendingVideos } from "@/lib/youtube";
-import { YouTubeTrendResult, YouTubeVideo } from "@/types/youtube";
+import { detectRisingVideos, getTrendingVideos, detectViralShorts } from "@/lib/youtube";
+import { YouTubeTrendResult, YouTubeVideo, ViralShortsResult } from "@/types/youtube";
 import { getCached } from "@/lib/cache";
 
 /**
@@ -73,6 +73,36 @@ export async function getYouTubeTrendingVideos(
             err.code === 403
                 ? "YouTube API 일일 쿼터가 초과되었습니다."
                 : `인기 영상 조회 실패: ${err.message || "Unknown error"}`
+        );
+    }
+}
+
+/**
+ * 바이럴 쇼츠 탐지
+ * 구독자 대비 조회수 폭발 Shorts 영상 조회
+ */
+export async function getViralShorts(): Promise<ViralShortsResult> {
+    try {
+        const result = await detectViralShorts();
+        return result;
+    } catch (error: unknown) {
+        console.error("Viral Shorts API Error:", error);
+
+        const err = error as { code?: number; message?: string };
+
+        // 쿼터 초과 시 캐시된 데이터 반환
+        if (err.code === 403) {
+            const cached = getCached<ViralShortsResult>("youtube:viral-shorts");
+            if (cached) {
+                console.log("Returning cached viral shorts data due to quota exceeded");
+                return { ...cached, cached: true };
+            }
+        }
+
+        throw new Error(
+            err.code === 403
+                ? "YouTube API 일일 쿼터가 초과되었습니다."
+                : `바이럴 쇼츠 조회 실패: ${err.message || "Unknown error"}`
         );
     }
 }
