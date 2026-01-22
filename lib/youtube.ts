@@ -353,8 +353,8 @@ export function getViralLevelInfo(level: ViralLevel | null): { emoji: string; la
  * videoDuration=short 파라미터 사용
  */
 async function searchShortsVideos(maxResults = 50): Promise<{ videoId: string; channelId: string }[]> {
-    // 최근 7일 내 업로드된 영상
-    const publishedAfter = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    // 최근 15일 내 업로드된 영상
+    const publishedAfter = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
 
     const response = await youtube.search.list({
         part: ["id", "snippet"],
