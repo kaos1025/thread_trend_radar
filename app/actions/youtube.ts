@@ -1,7 +1,7 @@
 "use server";
 
 import { detectRisingVideos, getTrendingVideos, detectViralShorts } from "@/lib/youtube";
-import { YouTubeTrendResult, YouTubeVideo, ViralShortsResult } from "@/types/youtube";
+import { YouTubeTrendResult, YouTubeVideo, ViralShortsResult, ViralTier, DEFAULT_SEARCH_KEYWORDS } from "@/types/youtube";
 import { getCached } from "@/lib/cache";
 
 /**
@@ -78,12 +78,24 @@ export async function getYouTubeTrendingVideos(
 }
 
 /**
- * 바이럴 쇼츠 탐지
+ * 바이럴 쇼츠 탐지 (3단계 티어 시스템)
  * 구독자 대비 조회수 폭발 Shorts 영상 조회
+ *
+ * @param keyword 검색 키워드 (없으면 기본 키워드 순환)
+ * @param tierFilter 특정 티어만 필터링 (선택)
  */
-export async function getViralShorts(): Promise<ViralShortsResult> {
+export async function getViralShorts(
+    keyword?: string,
+    tierFilter?: ViralTier[]
+): Promise<ViralShortsResult> {
+    // 키워드가 없으면 랜덤 선택 (캐시 키 일관성 확보)
+    const searchKeyword = keyword || DEFAULT_SEARCH_KEYWORDS[
+        Math.floor(Math.random() * DEFAULT_SEARCH_KEYWORDS.length)
+    ];
+    const cacheKey = `youtube:viral-shorts:${searchKeyword}`;
+
     try {
-        const result = await detectViralShorts();
+        const result = await detectViralShorts(searchKeyword, tierFilter);
         return result;
     } catch (error: unknown) {
         console.error("Viral Shorts API Error:", error);
@@ -92,7 +104,7 @@ export async function getViralShorts(): Promise<ViralShortsResult> {
 
         // 쿼터 초과 시 캐시된 데이터 반환
         if (err.code === 403) {
-            const cached = getCached<ViralShortsResult>("youtube:viral-shorts");
+            const cached = getCached<ViralShortsResult>(cacheKey);
             if (cached) {
                 console.log("Returning cached viral shorts data due to quota exceeded");
                 return { ...cached, cached: true };

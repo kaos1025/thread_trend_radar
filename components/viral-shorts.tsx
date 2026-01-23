@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViralVideo, ViralLevel, VIRAL_LEVEL_THRESHOLDS, VIRAL_CRITERIA } from "@/types/youtube";
+import { Input } from "@/components/ui/input";
+import {
+    ViralVideo,
+    ViralTier,
+    VIRAL_TIERS,
+    DEFAULT_SEARCH_KEYWORDS,
+} from "@/types/youtube";
 import { getViralShorts } from "@/app/actions/youtube";
 import {
     Youtube,
@@ -17,33 +23,21 @@ import {
     Flame,
     Clock,
     AlertCircle,
+    Search,
+    Filter,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// 바이럴 레벨 판정
-function getViralLevel(viralRatio: number): ViralLevel | null {
-    if (viralRatio >= VIRAL_LEVEL_THRESHOLDS.mega) return "mega";
-    if (viralRatio >= VIRAL_LEVEL_THRESHOLDS.super) return "super";
-    if (viralRatio >= VIRAL_LEVEL_THRESHOLDS.viral) return "viral";
-    return null;
-}
-
-// T025: 바이럴 레벨별 표시 정보
-function getViralLevelInfo(level: ViralLevel | null): { emoji: string; label: string; bgColor: string; textColor: string } {
-    switch (level) {
-        case "mega":
-            return { emoji: "🔥🔥🔥", label: "메가 바이럴", bgColor: "bg-red-500", textColor: "text-white" };
-        case "super":
-            return { emoji: "🔥🔥", label: "슈퍼 바이럴", bgColor: "bg-orange-500", textColor: "text-white" };
-        case "viral":
-            return { emoji: "🔥", label: "바이럴", bgColor: "bg-yellow-500", textColor: "text-black" };
-        default:
-            return { emoji: "", label: "", bgColor: "", textColor: "" };
-    }
-}
+// 바이럴 티어 목록 (필터용)
+const TIER_OPTIONS: { tier: ViralTier; config: typeof VIRAL_TIERS.mega }[] = [
+    { tier: "mega", config: VIRAL_TIERS.mega },
+    { tier: "high", config: VIRAL_TIERS.high },
+    { tier: "rising", config: VIRAL_TIERS.rising },
+];
 
 // 숫자 포맷팅 (K, M 단위)
 function formatNumber(num: number): string {
+    if (num < 0) return "비공개";
     if (num >= 1000000) {
         return (num / 1000000).toFixed(1) + "M";
     }
@@ -59,10 +53,18 @@ export function ViralShorts() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState({ totalSearched: 0, viralCount: 0, analyzedAt: "" });
+
+    // 키워드 검색 상태
+    const [keyword, setKeyword] = useState<string>("");
+    const [selectedKeyword, setSelectedKeyword] = useState<string>("");
+
+    // 티어 필터 상태 (기본: 모든 티어 선택)
+    const [selectedTiers, setSelectedTiers] = useState<ViralTier[]>(["mega", "high", "rising"]);
+
     const { toast } = useToast();
 
-    // 바이럴 쇼츠 로드
-    const loadViralShorts = async (showRefreshToast = false) => {
+    // 바이럴 쇼츠 로드 (API에서는 전체 조회, 필터링은 클라이언트에서 처리)
+    const loadViralShorts = useCallback(async (searchKeyword?: string, showRefreshToast = false) => {
         try {
             setError(null);
             if (showRefreshToast) {
@@ -71,7 +73,9 @@ export function ViralShorts() {
                 setIsLoading(true);
             }
 
-            const result = await getViralShorts();
+            // API에서는 전체 조회 (필터링은 클라이언트에서 useMemo로 처리)
+            const result = await getViralShorts(searchKeyword || undefined);
+
             setVideos(result.videos);
             setStats({
                 totalSearched: result.totalSearched,
@@ -100,11 +104,44 @@ export function ViralShorts() {
             setIsLoading(false);
             setIsRefreshing(false);
         }
-    };
+    }, [toast]);
 
+    // 초기 로드
     useEffect(() => {
         loadViralShorts();
-    }, []);
+    }, [loadViralShorts]);
+
+    // 키워드 검색 핸들러
+    const handleSearch = () => {
+        const searchKeyword = keyword.trim();
+        setSelectedKeyword(searchKeyword);
+        loadViralShorts(searchKeyword, true);
+    };
+
+    // 추천 키워드 클릭 핸들러
+    const handleKeywordClick = (kw: string) => {
+        setKeyword(kw);
+        setSelectedKeyword(kw);
+        loadViralShorts(kw, true);
+    };
+
+    // 티어 필터 토글
+    const toggleTier = (tier: ViralTier) => {
+        setSelectedTiers((prev) => {
+            if (prev.includes(tier)) {
+                // 최소 1개는 선택되어 있어야 함
+                if (prev.length === 1) return prev;
+                return prev.filter((t) => t !== tier);
+            }
+            return [...prev, tier];
+        });
+    };
+
+    // 필터된 비디오 (useMemo로 메모이제이션)
+    const filteredVideos = useMemo(
+        () => videos.filter((v) => v.viralTier && selectedTiers.includes(v.viralTier)),
+        [videos, selectedTiers]
+    );
 
     // 영상 클릭 핸들러 (Shorts URL)
     const handleVideoClick = (videoId: string) => {
@@ -117,16 +154,15 @@ export function ViralShorts() {
         window.open(`https://www.youtube.com/channel/${channelId}`, "_blank");
     };
 
-    // T024 & T025: 바이럴 뱃지 렌더링
-    const renderViralBadge = (viralRatio: number) => {
-        const level = getViralLevel(viralRatio);
-        const info = getViralLevelInfo(level);
+    // T024 & T025: 바이럴 뱃지 렌더링 (3단계 티어)
+    const renderViralBadge = (tier: ViralTier | null) => {
+        if (!tier) return null;
 
-        if (!level) return null;
+        const config = VIRAL_TIERS[tier];
 
         return (
-            <Badge className={`${info.bgColor} ${info.textColor} text-xs font-bold`}>
-                {info.emoji} {info.label}
+            <Badge className={`${config.bgColor} text-white text-xs font-bold`}>
+                {config.emoji} {config.label}
             </Badge>
         );
     };
@@ -182,19 +218,19 @@ export function ViralShorts() {
                     <div>
                         <h2 className="text-xl font-bold">바이럴 쇼츠</h2>
                         <p className="text-sm text-muted-foreground">
-                            구독자 {formatNumber(VIRAL_CRITERIA.maxSubscribers)} 이하 / 조회수 {formatNumber(VIRAL_CRITERIA.minViews)} 이상
+                            3단계 기준: 메가/바이럴/떠오르는
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <Badge variant="outline" className="text-xs">
-                        {stats.totalSearched}개 검색 / {stats.viralCount}개 발견
+                        {stats.totalSearched}개 검색 / {filteredVideos.length}개 발견
                     </Badge>
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => loadViralShorts(true)}
+                        onClick={() => loadViralShorts(selectedKeyword, true)}
                         disabled={isRefreshing}
                     >
                         <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -203,20 +239,78 @@ export function ViralShorts() {
                 </div>
             </div>
 
+            {/* 키워드 검색 */}
+            <div className="space-y-3">
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="검색 키워드 (예: 브이로그, 먹방)"
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                            className="pl-10"
+                        />
+                    </div>
+                    <Button onClick={handleSearch} disabled={isRefreshing}>
+                        검색
+                    </Button>
+                </div>
+
+                {/* 추천 키워드 */}
+                <div className="flex flex-wrap gap-2">
+                    {DEFAULT_SEARCH_KEYWORDS.slice(0, 8).map((kw) => (
+                        <Badge
+                            key={kw}
+                            variant={selectedKeyword === kw ? "default" : "outline"}
+                            className="cursor-pointer hover:bg-primary/10"
+                            onClick={() => handleKeywordClick(kw)}
+                        >
+                            {kw}
+                        </Badge>
+                    ))}
+                </div>
+            </div>
+
+            {/* 티어 필터 */}
+            <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Filter className="h-4 w-4" />
+                    <span>필터:</span>
+                </div>
+                {TIER_OPTIONS.map(({ tier, config }) => (
+                    <Badge
+                        key={tier}
+                        variant={selectedTiers.includes(tier) ? "default" : "outline"}
+                        className={`cursor-pointer ${
+                            selectedTiers.includes(tier)
+                                ? config.bgColor + " text-white hover:opacity-80"
+                                : "hover:bg-primary/10"
+                        }`}
+                        onClick={() => toggleTier(tier)}
+                    >
+                        {config.emoji} {config.label}
+                        <span className="ml-1 text-xs opacity-75">
+                            (구독 {formatNumber(config.maxSubscribers)}↓)
+                        </span>
+                    </Badge>
+                ))}
+            </div>
+
             {/* 영상 리스트 */}
-            {videos.length === 0 ? (
+            {filteredVideos.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground border rounded-lg">
                     <Flame className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p className="font-medium">바이럴 쇼츠를 찾지 못했습니다</p>
                     <p className="text-sm mt-1">
-                        구독자 {formatNumber(VIRAL_CRITERIA.maxSubscribers)} 이하 채널의<br />
-                        조회수 {formatNumber(VIRAL_CRITERIA.minViews)} 이상 영상이 없습니다.
+                        선택한 필터 조건에 맞는 영상이 없습니다.<br />
+                        다른 키워드나 필터를 시도해보세요.
                     </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {videos.map((video, index) => {
-                        const level = getViralLevel(video.viralRatio);
+                    {filteredVideos.map((video, index) => {
+                        const tier = video.viralTier;
 
                         return (
                             <Card
@@ -256,7 +350,7 @@ export function ViralShorts() {
                                     {/* 바이럴 비율 오버레이 */}
                                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                                         <div className="flex items-center justify-between">
-                                            {renderViralBadge(video.viralRatio)}
+                                            {renderViralBadge(tier)}
                                             <span className="text-white font-bold text-lg flex items-center gap-1">
                                                 <TrendingUp className="h-4 w-4" />
                                                 {video.viralRatio}x
@@ -301,9 +395,7 @@ export function ViralShorts() {
                                             <span>{video.hoursAgo}시간 전</span>
                                         </div>
                                         <div className={`flex items-center gap-1 font-medium ${
-                                            level === "mega" ? "text-red-500" :
-                                            level === "super" ? "text-orange-500" :
-                                            "text-yellow-500"
+                                            tier ? VIRAL_TIERS[tier].color : "text-gray-500"
                                         }`}>
                                             <Flame className="h-3 w-3" />
                                             <span>{video.viralRatio}배 바이럴</span>
