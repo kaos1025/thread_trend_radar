@@ -6,29 +6,6 @@ import { unstable_cache } from "next/cache";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-/**
- * Utility to parse traffic strings like "20K+", "1M+" into numbers.
- * Returns 0 on failure.
- */
-function parseTraffic(trafficStr: string): number {
-    try {
-        if (!trafficStr) return 0;
-        const normalized = trafficStr.toUpperCase().replace(/[^0-9KM]/g, "").trim();
-
-        let multiplier = 1;
-        if (normalized.endsWith("K")) {
-            multiplier = 1000;
-        } else if (normalized.endsWith("M")) {
-            multiplier = 1000000;
-        }
-
-        const numPart = parseFloat(normalized.replace(/[KM]/, ""));
-        return isNaN(numPart) ? 0 : numPart * multiplier;
-    } catch (e) {
-        console.error("Traffic parsing error:", e);
-        return 0;
-    }
-}
 
 const schema = {
     description: "Recommended trends and top trend graph data",
@@ -72,7 +49,7 @@ const schema = {
  * Fetch Real-time trends from SerpApi (Google Trends)
  * Returns a formatted string list of trends for Gemini context.
  */
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const googleTrends = require("google-trends-api");
 
 /**
@@ -125,7 +102,7 @@ async function getGoogleTrendsData(): Promise<string> {
         if (trends.length === 0) {
             console.warn("[GoogleTrends] No data found. Falling back to Google News RSS...");
             try {
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 const Parser = require("rss-parser");
                 const parser = new Parser();
                 const feed = await parser.parseURL("https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko");

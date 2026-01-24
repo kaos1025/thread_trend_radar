@@ -182,6 +182,40 @@ YOUTUBE_API_KEY=your_youtube_api_key
 
 ---
 
+## 🔄 자동화 워크플로우 (필수)
+
+### 모든 코드 수정 작업 후 자동 실행 순서:
+```
+코드 수정 완료
+    ↓
+1. npm run build (빌드 확인)
+    ↓
+2. code-reviewer 서브에이전트 (코드 리뷰)
+   - 🚨 반드시 수정 항목 → 즉시 수정
+   - ⚠️ 개선 필요 → 가능하면 수정
+    ↓
+3. test-runner 서브에이전트 + Playwright MCP (E2E 테스트)
+   - npm run dev 실행 후 테스트
+   - 실패 시 → 버그 수정 → 재테스트
+    ↓
+4. TASK.md, PROGRESS.md 업데이트
+    ↓
+5. git commit & push
+```
+
+### 자동화 규칙
+- 위 순서는 **모든 코드 수정 작업에 자동 적용**
+- 프롬프트에 별도 지시 없어도 실행됨
+- 스킵하려면 명시적으로 "리뷰/테스트 스킵" 요청 필요
+
+### 서브에이전트 위치
+```
+.claude/agents/
+├── code-reviewer.md   # 코드 리뷰 (자동 위임)
+└── test-runner.md     # E2E 테스트 (자동 위임)
+
+---
+
 ## 🧪 테스트 체크리스트
 
 빌드/배포 전 확인:
