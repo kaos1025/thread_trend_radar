@@ -7,7 +7,49 @@
 
 ## 📅 진행 기록
 
-### 2026-01-22 (최신) - UI 개선 & 코드 리뷰 & E2E 테스트 완료
+### 2026-01-24 (최신) - MVP 배포 완료 🚀
+
+#### ✅ 완료한 작업
+**바이럴 쇼츠 탐지 로직 개선**
+- 바이럴 비율 계산 로직 개선 (조회수/구독자 비율)
+- 바이럴 등급 시스템 추가 (🔥🔥🔥 메가/🔥🔥 바이럴/🔥 떠오르는)
+- 빈 상태 UI 개선 및 에러 핸들링 강화
+- 키워드 검색 + 추천 태그 UI
+
+**E2E 테스트 (Playwright MCP)**
+- TC01~TC06: 바이럴 쇼츠 탭 테스트 통과
+- 로컬 환경 테스트 완료
+
+**Vercel 배포**
+- T043: Vercel 연동 및 배포 완료
+- URL: https://trendradar-juji.vercel.app/
+- 프로덕션 환경 테스트 완료 (25개 검색 / 10개 바이럴 영상 발견)
+
+#### 📁 커밋 내역
+```
+2871d09 feat: 바이럴 쇼츠 탐지 로직 개선 및 UI 강화
+- app/actions/youtube.ts
+- lib/youtube.ts
+- types/youtube.ts
+- components/viral-shorts.tsx
+- hooks/use-toast.ts
+- eslint.config.mjs
+- package.json / package-lock.json
+```
+
+#### 📸 배포 확인 스크린샷
+```
+.playwright-mcp/vercel-deploy-main.png   - 메인 페이지
+.playwright-mcp/vercel-deploy-viral.png  - 바이럴 쇼츠 탭
+```
+
+#### 🎉 마일스톤 달성
+- **M6: MVP 배포 완료!**
+- Phase 1 완료 (96%)
+
+---
+
+### 2026-01-22 - UI 개선 & 코드 리뷰 & E2E 테스트 완료
 
 #### ✅ 완료한 작업
 **Phase A: UI 개선 (T031~T035)**
@@ -152,7 +194,7 @@ components/trend-dashboard.tsx - 바이럴 탭 추가
 | M3: YouTube API 연동 | ✅ 완료 | 기본 연동 |
 | M4: 바이럴 쇼츠 탐지 | ✅ 완료 | T021~T026 완료 |
 | M5: UI/UX 개선 | ✅ 완료 | T031~T035, 코드리뷰, E2E 테스트 |
-| M6: MVP 배포 | ⬜ 대기 | Vercel |
+| M6: MVP 배포 | ✅ 완료 | https://trendradar-juji.vercel.app/ |
 | M7: 스레드/인스타 연동 | ⬜ 대기 | Phase 2 |
 | **M8: 서비스 완료** | ⬜ 대기 | 개발 종료 |
 
@@ -161,10 +203,10 @@ components/trend-dashboard.tsx - 바이럴 탭 추가
 ## 📊 완료율
 
 ```
-Phase 1 진행률: ████████████░░░░ 80% (20/25)
+Phase 1 진행률: ███████████████░ 96% (27/28)
 Phase 2 진행률: ░░░░░░░░░░░░░░░░ 0% (0/6)
 
-전체 진행률: ██████████░░░░░░ 65% (20/31)
+전체 진행률: ████████████░░░░ 79% (27/34)
 ```
 
 ---
@@ -201,11 +243,11 @@ Phase 2 진행률: ░░░░░░░░░░░░░░░░ 0% (0/6)
 └── ✅ Phase C: E2E 테스트 (Playwright)
 ```
 
-### 다음 목표: MVP 배포
+### ✅ MVP 배포 - 완료!
 ```
 작업 목록:
-├── T040: API 캐싱 구현
-└── T043: Vercel 배포
+├── ✅ T040: API 캐싱 구현
+└── ✅ T043: Vercel 배포 (https://trendradar-juji.vercel.app/)
 ```
 
 ---
