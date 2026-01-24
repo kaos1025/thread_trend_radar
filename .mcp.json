@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "stitch": {
+      "command": "npx",
+      "args": ["-y", "stitch-mcp"],
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "gen-lang-client-0750621387",
+        "GOOGLE_APPLICATION_CREDENTIALS": "./service-account.json"
+      }
+    }
+  }
+}
