@@ -124,23 +124,28 @@ export function TrendDashboard() {
 
     return (
         <div className="space-y-8">
-            {/* Header Section */}
-            <div className="text-center space-y-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Social Trend Radar
+            {/* Header Section - 모던 그라데이션 */}
+            <div className="text-center space-y-6 py-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 text-sm text-orange-600 dark:text-orange-400 mb-2">
+                    <Flame className="h-4 w-4" />
+                    실시간 트렌드 분석
+                </div>
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm">
+                    Trend Radar
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    AI가 실시간 검색 데이터를 기반으로 분석한 소셜 미디어 급상승 트렌드
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                    AI가 실시간 검색 데이터를 분석하여<br className="hidden sm:block" />
+                    <span className="font-semibold text-foreground">바이럴 콘텐츠</span>와 <span className="font-semibold text-foreground">급상승 트렌드</span>를 발견합니다
                 </p>
 
-                {/* Search Bar */}
-                <div className="flex w-full max-w-md mx-auto items-center space-x-2 pt-4">
-                    <div className="relative w-full">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                {/* Search Bar - 글래스모피즘 */}
+                <div className="flex w-full max-w-lg mx-auto items-center gap-3 pt-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                         <Input
                             type="text"
-                            placeholder="관심 토픽 검색 (예: 안성재, 아이폰)"
-                            className="pl-10 h-12 text-base shadow-sm border-slate-200 dark:border-slate-800 focus-visible:ring-indigo-500 rounded-xl"
+                            placeholder="관심 토픽 검색 (예: 안성재, 아이폰, 먹방)"
+                            className="pl-12 h-14 text-base bg-background/80 backdrop-blur-sm border-border/50 focus:border-orange-500/50 focus:ring-orange-500/20 rounded-2xl shadow-lg shadow-black/5 transition-all"
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
                             onKeyDown={handleKeyDown}
@@ -149,51 +154,67 @@ export function TrendDashboard() {
                     <Button
                         type="submit"
                         size="lg"
-                        className={`h-12 px-6 rounded-xl font-bold transition-all duration-300 ${isAnalyzing ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30'}`}
+                        className={`h-14 px-8 rounded-2xl font-bold transition-all duration-300 ${
+                            isAnalyzing
+                                ? 'bg-orange-400 cursor-wait'
+                                : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-xl shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5'
+                        }`}
                         onClick={handleAnalyze}
                         disabled={isAnalyzing}
                     >
                         {isAnalyzing ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                분석 중...
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                분석 중
                             </>
                         ) : (
-                            "분석 시작"
+                            <>
+                                <Search className="mr-2 h-5 w-5" />
+                                분석
+                            </>
                         )}
                     </Button>
                 </div>
             </div>
 
-            {/* Source Tabs (Trends / YouTube / Viral Shorts) */}
+            {/* Source Tabs - 프리미엄 스타일 */}
             <Tabs value={source} className="w-full" onValueChange={handleSourceChange}>
-                <div className="flex justify-center mb-6">
-                    <TabsList className="grid w-full max-w-[450px] grid-cols-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-full h-10">
-                        <TabsTrigger value="trends" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
+                <div className="flex justify-center mb-10">
+                    <TabsList className="inline-flex h-12 items-center justify-center rounded-full bg-muted/40 dark:bg-white/5 p-1 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20">
+                        <TabsTrigger
+                            value="trends"
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/25 text-muted-foreground hover:text-foreground"
+                        >
                             <TrendingUp className="h-4 w-4" />
-                            트렌드
+                            <span>트렌드</span>
                         </TabsTrigger>
-                        <TabsTrigger value="youtube" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
-                            <Youtube className="h-4 w-4 text-red-500" />
-                            YouTube
+                        <TabsTrigger
+                            value="youtube"
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-red-500/25 text-muted-foreground hover:text-foreground"
+                        >
+                            <Youtube className="h-4 w-4" />
+                            <span>YouTube</span>
                         </TabsTrigger>
-                        <TabsTrigger value="viral" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-2">
-                            <Zap className="h-4 w-4 text-orange-500" />
-                            바이럴
+                        <TabsTrigger
+                            value="viral"
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-2.5 text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 text-muted-foreground hover:text-foreground"
+                        >
+                            <Zap className="h-4 w-4" />
+                            <span>바이럴</span>
                         </TabsTrigger>
                     </TabsList>
                 </div>
 
                 {/* 트렌드 콘텐츠 */}
                 <TabsContent value="trends" className="mt-0">
-                    {/* Category Tabs */}
+                    {/* Category Tabs - 서브 탭 스타일 */}
                     <Tabs value={category} className="w-full" onValueChange={handleTabChange}>
                         <div className="flex justify-center mb-8">
-                            <TabsList className="grid w-full max-w-[400px] grid-cols-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-full h-12">
-                                <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">전체</TabsTrigger>
-                                <TabsTrigger value="fashion" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">패션</TabsTrigger>
-                                <TabsTrigger value="tech" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">테크</TabsTrigger>
-                                <TabsTrigger value="humor" className="rounded-full data-[state=active]:bg-white data-[state=active]:shadow-sm">유머</TabsTrigger>
+                            <TabsList className="inline-flex h-10 items-center justify-center gap-1 rounded-xl bg-muted/30 dark:bg-white/5 p-1 backdrop-blur-sm border border-border/30">
+                                <TabsTrigger value="all" className="rounded-lg px-4 py-1.5 text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground">전체</TabsTrigger>
+                                <TabsTrigger value="fashion" className="rounded-lg px-4 py-1.5 text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground">패션</TabsTrigger>
+                                <TabsTrigger value="tech" className="rounded-lg px-4 py-1.5 text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground">테크</TabsTrigger>
+                                <TabsTrigger value="humor" className="rounded-lg px-4 py-1.5 text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-foreground text-muted-foreground hover:text-foreground">유머</TabsTrigger>
                             </TabsList>
                         </div>
 
@@ -205,22 +226,25 @@ export function TrendDashboard() {
 
                             {/* Trend Cards */}
                             {isLoading ? (
-                                // Skeleton UI for 6 cards
+                                // Skeleton UI - 프리미엄 스타일
                                 Array.from({ length: 6 }).map((_, i) => (
-                                    <Card key={i} className="h-full border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                                        <CardHeader className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <Skeleton className="h-4 w-12 rounded-full" />
-                                                <Skeleton className="h-4 w-16" />
+                                    <Card key={i} className="h-full overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
+                                        <CardHeader className="space-y-3 pb-3">
+                                            <div className="flex justify-between items-center">
+                                                <Skeleton className="h-5 w-10 rounded-full" />
+                                                <Skeleton className="h-5 w-16 rounded-lg" />
                                             </div>
-                                            <Skeleton className="h-6 w-3/4" />
+                                            <Skeleton className="h-7 w-4/5 rounded-lg" />
                                         </CardHeader>
-                                        <CardContent className="space-y-2">
-                                            <Skeleton className="h-4 w-full" />
-                                            <Skeleton className="h-4 w-5/6" />
+                                        <CardContent className="space-y-3">
+                                            <Skeleton className="h-4 w-full rounded" />
+                                            <Skeleton className="h-4 w-3/4 rounded" />
                                         </CardContent>
-                                        <CardFooter>
-                                            <Skeleton className="h-6 w-full rounded-md" />
+                                        <CardFooter className="pt-3">
+                                            <div className="flex gap-2">
+                                                <Skeleton className="h-6 w-16 rounded-full" />
+                                                <Skeleton className="h-6 w-14 rounded-full" />
+                                            </div>
                                         </CardFooter>
                                     </Card>
                                 ))
@@ -231,34 +255,44 @@ export function TrendDashboard() {
                                         key={item.id}
                                         className="group block h-full"
                                     >
-                                        <Card className={`h-full hover:shadow-lg transition-all duration-500 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 border hover:border-primary/50 animate-in fade-in zoom-in-50 duration-500`} style={{ animationDelay: `${index * 100}ms` }}>
-                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                                <span className="text-sm font-medium text-muted-foreground">
-                                                    No.{index + 1}
-                                                </span>
-                                                <Badge variant="outline" className="font-mono text-xs">
-                                                    <Flame className="h-3 w-3 mr-1 text-orange-500" />
+                                        <Card
+                                            className="h-full overflow-hidden border-border/30 bg-card/80 backdrop-blur-sm hover:bg-card transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/10 hover:border-orange-500/30 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom-4"
+                                            style={{ animationDelay: `${index * 80}ms`, animationDuration: '500ms' }}
+                                        >
+                                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
+                                                    index === 0 ? 'bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg shadow-amber-500/30' :
+                                                    index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-400 text-white' :
+                                                    index === 2 ? 'bg-gradient-to-br from-amber-600 to-orange-600 text-white' :
+                                                    'bg-muted text-muted-foreground'
+                                                }`}>
+                                                    {index + 1}
+                                                </div>
+                                                <Badge variant="outline" className="font-mono text-xs border-orange-500/30 text-orange-500 bg-orange-500/10">
+                                                    <Flame className="h-3 w-3 mr-1" />
                                                     {item.velocity_score}
                                                 </Badge>
                                             </CardHeader>
-                                            <CardContent>
-                                                <div className="flex items-center space-x-2 mb-2">
-                                                    <h3 className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
+                                            <CardContent className="space-y-3">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <h3 className="text-xl font-bold tracking-tight group-hover:text-orange-500 transition-colors duration-300">
                                                         {item.keyword}
                                                     </h3>
                                                     {getSentimentBadge(item.sentiment)}
                                                 </div>
-                                                <div className="text-xs text-muted-foreground mb-4 font-medium flex items-center">
-                                                    <TrendingUp className="h-3 w-3 mr-1" />
-                                                    언급량 약 {item.total_posts.toLocaleString()}회
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50">
+                                                        <TrendingUp className="h-3 w-3 text-green-500" />
+                                                        <span>{item.total_posts.toLocaleString()}회</span>
+                                                    </div>
                                                 </div>
-                                                <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                                                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                                                     {item.summary}
                                                 </p>
                                             </CardContent>
-                                            <CardFooter className="flex flex-wrap gap-2 pt-4">
-                                                {item.related_hashtags.slice(0, 2).map((tag, i) => (
-                                                    <Badge key={i} variant="secondary" className="text-xs font-normal text-muted-foreground bg-slate-100 dark:bg-slate-800">
+                                            <CardFooter className="flex flex-wrap gap-1.5 pt-3 border-t border-border/30">
+                                                {item.related_hashtags.slice(0, 3).map((tag, i) => (
+                                                    <Badge key={i} variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted/50 hover:bg-muted transition-colors">
                                                         {tag}
                                                     </Badge>
                                                 ))}
