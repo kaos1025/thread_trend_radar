@@ -34,10 +34,22 @@ const youtube = google.youtube({
 const getCacheKey = (keyword: string) => `youtube:${keyword.toLowerCase()}`;
 
 /**
+ * API 키 검증 헬퍼 함수
+ * API 키가 설정되지 않은 경우 에러 throw
+ */
+function validateApiKey(): void {
+    if (!process.env.YOUTUBE_API_KEY) {
+        throw new Error("YOUTUBE_API_KEY가 설정되지 않았습니다. 환경 변수를 확인해주세요.");
+    }
+}
+
+/**
  * 키워드로 최근 영상 검색
  * 최근 48시간 내 업로드된 영상만 필터링
  */
 async function searchVideos(keyword: string, maxResults = 15): Promise<string[]> {
+    validateApiKey();
+
     // 48시간 전 시간 계산
     const publishedAfter = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
 
@@ -65,6 +77,7 @@ async function searchVideos(keyword: string, maxResults = 15): Promise<string[]>
  */
 async function getVideoDetails(videoIds: string[]): Promise<YouTubeVideo[]> {
     if (videoIds.length === 0) return [];
+    validateApiKey();
 
     const response = await youtube.videos.list({
         part: ["snippet", "statistics"],
@@ -221,6 +234,8 @@ export async function getTrendingVideos(categoryId = "0", maxResults = 10): Prom
     const cached = getCached<YouTubeVideo[]>(cacheKey);
     if (cached) return cached;
 
+    validateApiKey();
+
     const response = await youtube.videos.list({
         part: ["snippet", "statistics"],
         chart: "mostPopular",
@@ -293,6 +308,7 @@ async function getChannelSubscribers(channelIds: string[]): Promise<Map<string, 
     const channelMap = new Map<string, ChannelInfo>();
 
     if (channelIds.length === 0) return channelMap;
+    validateApiKey();
 
     // 중복 제거
     const uniqueIds = [...new Set(channelIds)];
@@ -431,6 +447,8 @@ async function searchShortsVideos(
     keyword: string,
     maxResults = 50
 ): Promise<{ videoId: string; channelId: string }[]> {
+    validateApiKey();
+
     // 최근 15일 내 업로드된 영상
     const publishedAfter = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -454,10 +472,8 @@ async function searchShortsVideos(
         }));
 }
 
-/**
- * Shorts 영상 상세 정보 조회
- */
-async function getShortsVideoDetails(videoIds: string[]): Promise<Map<string, {
+// Shorts 영상 상세 정보 타입
+interface ShortsVideoDetails {
     title: string;
     channelId: string;
     channelTitle: string;
@@ -466,10 +482,16 @@ async function getShortsVideoDetails(videoIds: string[]): Promise<Map<string, {
     viewCount: number;
     likeCount: number;
     commentCount: number;
-}>> {
-    const detailsMap = new Map();
+}
+
+/**
+ * Shorts 영상 상세 정보 조회
+ */
+async function getShortsVideoDetails(videoIds: string[]): Promise<Map<string, ShortsVideoDetails>> {
+    const detailsMap = new Map<string, ShortsVideoDetails>();
 
     if (videoIds.length === 0) return detailsMap;
+    validateApiKey();
 
     const response = await youtube.videos.list({
         part: ["snippet", "statistics"],

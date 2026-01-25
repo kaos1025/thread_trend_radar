@@ -258,7 +258,12 @@ export function ViralShorts() {
                             placeholder="검색 키워드 (예: 브이로그, 먹방, ASMR)"
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                            onKeyDown={(e) => {
+                                // 한국어 IME 조합 중일 때는 Enter 무시 (중복 검색 방지)
+                                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                                    handleSearch();
+                                }
+                            }}
                             className="pl-11 h-12 rounded-xl bg-background/50 border-white/10 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 transition-all duration-300"
                         />
                     </div>

@@ -7,7 +7,124 @@
 
 ## 📅 진행 기록
 
-### 2026-01-25 (최신) - 프리미엄 UI 디자인 개선 🎨
+### 2026-01-26 (최신) - 기능 검증 및 코드 개선
+
+#### ✅ 기능 검증 완료 (B1, B3, B6)
+
+**B1: API 캐싱 (30분 TTL)** - 이미 구현됨 ✅
+- `lib/cache.ts`: TTL 메모리 캐시 유틸리티
+- `lib/youtube.ts`:
+  - `detectRisingVideos()` - 30분 캐싱
+  - `getTrendingVideos()` - 15분 캐싱
+  - `detectViralShorts()` - 30분 캐싱
+
+**B3: 키워드 검색 UI** - 이미 구현됨 ✅
+- `components/viral-shorts.tsx`:
+  - 검색 입력 필드 + 검색 버튼
+  - Enter 키 제출 지원
+  - 추천 키워드 8개 태그 (클릭 시 자동 검색)
+  - 검색 중 로딩 상태 표시
+
+**B6: YouTube 링크 연결** - 이미 구현됨 ✅
+- 카드 클릭 → `https://www.youtube.com/shorts/{videoId}` 새 탭
+- 채널 클릭 → `https://www.youtube.com/channel/{channelId}` 새 탭
+- 호버 효과: scale, shadow, ExternalLink 아이콘
+
+#### 🔧 코드 리뷰 이슈 수정
+
+**1. API 키 검증 로직 추가 (Critical)**
+```typescript
+// lib/youtube.ts에 validateApiKey() 함수 추가
+function validateApiKey(): void {
+    if (!process.env.YOUTUBE_API_KEY) {
+        throw new Error("YOUTUBE_API_KEY가 설정되지 않았습니다.");
+    }
+}
+```
+- 모든 YouTube API 호출 함수에 검증 로직 적용
+- 런타임 에러 방지
+
+**2. 한국어 IME 처리 개선**
+```typescript
+// Enter 키 중복 검색 방지
+onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+        handleSearch();
+    }
+}}
+```
+
+**3. 타입 안전성 강화**
+- `ShortsVideoDetails` 인터페이스 추가
+- `Map<string, ShortsVideoDetails>` 명시적 타입 지정
+
+#### 📁 변경된 파일
+```
+lib/youtube.ts             - API 키 검증 로직, 타입 안전성 개선
+components/viral-shorts.tsx - 한국어 IME 처리 개선
+```
+
+---
+
+### 2026-01-26 - E2E 테스트 수행
+
+#### ✅ 테스트 결과 요약
+```
+총 테스트: 23개
+- PASS: 22개
+- FAIL: 0개
+- SKIP: 1개 (클라이언트 렌더링 컴포넌트)
+```
+
+#### 테스트 케이스 상세
+
+**1. 메인 대시보드 정상 렌더링**
+- [x] HTTP 200 응답
+- [x] 로딩 시간 3초 이내
+- [x] TrendRadar 로고 표시
+- [x] Trend Radar 제목 표시
+- [x] 실시간 트렌드 분석 텍스트
+- [x] 검색 입력 필드 존재
+- [x] 트렌드/YouTube/바이럴 탭 버튼 존재
+
+**2. 바이럴 탭 콘텐츠**
+- [x] 바이럴 탭 URL 정상 접근 (/?source=viral)
+- [x] 바이럴 관련 콘텐츠 존재
+
+**3. 키워드 검색 UI**
+- [x] 검색 입력 필드 존재
+- [x] 검색/분석 버튼 존재
+- [x] 카테고리 탭 (전체/패션/테크/유머) 존재
+
+**4. 티어 필터**
+- [x] 티어 필터 관련 콘텐츠 존재 (MEGA, HIGH, RISING)
+- [ ] 추천 키워드 태그 표시 (SKIP - 클라이언트 렌더링)
+
+**5. 반응형/접근성**
+- [x] Viewport 메타 태그 존재
+- [x] HTML lang="ko" 설정
+
+**6. 다크모드**
+- [x] 다크모드 CSS 클래스 존재
+- [x] 테마 관련 설정 존재
+
+**7. 푸터**
+- [x] 데이터 소스 정보 (Google Trends, YouTube, Gemini)
+- [x] 법적 링크 존재 (이용약관, 개인정보처리방침)
+
+#### 테스트 환경
+- 테스트 방법: HTTP 응답 기반 (Node.js fetch)
+- 테스트 스크립트: `/mnt/c/juji/thread_trend_radar/e2e-test.mjs`
+- 참고: Playwright MCP 미설정으로 브라우저 기반 테스트 미수행
+- 클라이언트 렌더링 컴포넌트는 추가 브라우저 테스트 권장
+
+#### 📝 참고사항
+- Playwright MCP 설정 시 전체 E2E 테스트 (스크린샷 포함) 가능
+- 현재 .mcp.json에는 stitch MCP만 설정됨
+
+---
+
+### 2026-01-25 - 프리미엄 UI 디자인 개선
 
 #### ✅ 완료한 작업
 **프리미엄 다크모드 UI 디자인 개선**
