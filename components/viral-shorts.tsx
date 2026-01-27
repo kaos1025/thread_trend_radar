@@ -47,14 +47,20 @@ function formatNumber(num: number): string {
     return num.toString();
 }
 
-export function ViralShorts() {
+// ViralShorts 컴포넌트 Props
+interface ViralShortsProps {
+    /** 외부에서 전달받은 검색 키워드 (트렌드 탭에서 클릭 시) */
+    initialKeyword?: string;
+}
+
+export function ViralShorts({ initialKeyword }: ViralShortsProps) {
     const [videos, setVideos] = useState<ViralVideo[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [stats, setStats] = useState({ totalSearched: 0, viralCount: 0, analyzedAt: "" });
 
-    // 키워드 검색 상태
+    // 키워드 검색 상태 (hydration 이슈 방지: useEffect에서 초기화)
     const [keyword, setKeyword] = useState<string>("");
     const [selectedKeyword, setSelectedKeyword] = useState<string>("");
 
@@ -106,10 +112,18 @@ export function ViralShorts() {
         }
     }, [toast]);
 
-    // 초기 로드
+    // 초기 로드 및 외부 키워드 변경 처리 (B10: 키워드 → 쇼츠 연동)
+    // loadViralShorts를 의존성에서 제거하여 무한 루프 방지
     useEffect(() => {
-        loadViralShorts();
-    }, [loadViralShorts]);
+        // 외부에서 전달받은 키워드로 상태 업데이트
+        if (initialKeyword) {
+            setKeyword(initialKeyword);
+            setSelectedKeyword(initialKeyword);
+        }
+        // API 호출
+        loadViralShorts(initialKeyword || undefined);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialKeyword]);
 
     // 키워드 검색 핸들러
     const handleSearch = () => {

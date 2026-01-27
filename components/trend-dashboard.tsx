@@ -30,7 +30,8 @@ export function TrendDashboard() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const category = searchParams.get("category") || "all";
-    const source = searchParams.get("source") || "trends"; // trends | youtube
+    const source = searchParams.get("source") || "trends"; // trends | youtube | viral
+    const viralKeyword = searchParams.get("keyword") || ""; // B10: 바이럴 검색 키워드
 
     // Initial Data Fetching (AI Recommendations)
     useEffect(() => {
@@ -75,13 +76,24 @@ export function TrendDashboard() {
         }
     };
 
-    // 소스 탭 변경 핸들러 (트렌드 vs YouTube)
+    // 소스 탭 변경 핸들러 (트렌드 vs YouTube vs 바이럴)
     const handleSourceChange = (value: string) => {
         if (value === "trends") {
             router.push("/");
         } else {
             router.push(`/?source=${value}`);
         }
+    };
+
+    // B10: 트렌드 키워드 클릭 → 바이럴 쇼츠 검색
+    const handleKeywordToViral = (keywordText: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        router.push(`/?source=viral&keyword=${encodeURIComponent(keywordText)}`);
+        toast({
+            title: "바이럴 쇼츠 검색",
+            description: `'${keywordText}' 키워드로 바이럴 쇼츠를 검색합니다.`,
+        });
     };
 
     const handleAnalyze = async () => {
@@ -290,12 +302,25 @@ export function TrendDashboard() {
                                                     {item.summary}
                                                 </p>
                                             </CardContent>
-                                            <CardFooter className="flex flex-wrap gap-1.5 pt-3 border-t border-border/30">
-                                                {item.related_hashtags.slice(0, 3).map((tag, i) => (
-                                                    <Badge key={i} variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted/50 hover:bg-muted transition-colors">
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
+                                            <CardFooter className="flex flex-wrap items-center justify-between gap-1.5 pt-3 border-t border-border/30">
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {item.related_hashtags.slice(0, 3).map((tag, i) => (
+                                                        <Badge key={i} variant="secondary" className="text-xs font-normal text-muted-foreground bg-muted/50 hover:bg-muted transition-colors">
+                                                            {tag}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                                {/* B10: 바이럴 쇼츠 검색 버튼 */}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 px-2 text-xs text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"
+                                                    onClick={(e) => handleKeywordToViral(item.keyword, e)}
+                                                    title="이 키워드로 바이럴 쇼츠 검색"
+                                                >
+                                                    <Zap className="h-3 w-3 mr-1" />
+                                                    쇼츠
+                                                </Button>
                                             </CardFooter>
                                         </Card>
                                     </Link>
@@ -312,7 +337,8 @@ export function TrendDashboard() {
 
                 {/* 바이럴 쇼츠 콘텐츠 */}
                 <TabsContent value="viral" className="mt-0">
-                    <ViralShorts />
+                    {/* key prop으로 키워드 변경 시 컴포넌트 재마운트 */}
+                    <ViralShorts initialKeyword={viralKeyword} key={viralKeyword || "default"} />
                 </TabsContent>
             </Tabs>
 
